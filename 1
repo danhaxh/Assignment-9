@@ -1,0 +1,97 @@
+# Assignment 9-3 - Exercise 2
+
+from tkinter import *
+import RPi.GPIO as GPIO
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)  # BCM GPIO numbering
+
+LED = 17
+BUZZER = 27
+MOTOR = 18
+
+GPIO.setup(LED, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(BUZZER, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(MOTOR, GPIO.OUT)
+
+ZERO_DEGREE = 2.5
+NINETY_DEGREE = 7.5
+servo = GPIO.PWM(MOTOR, 50)
+servo.start(ZERO_DEGREE)
+
+root = Tk()
+root.title("CAR Project")
+root.geometry('600x400')
+
+BuzzerCount = 0
+LightCount = 0
+MotorCount = 0
+
+
+def buzzerClicked():
+    global BuzzerCount
+    BuzzerCount = BuzzerCount + 1
+    CounterReminder = BuzzerCount % 2
+    if CounterReminder == 1:
+        GPIO.output(BUZZER, GPIO.HIGH)
+        buzzerLabel.config(text='BUZZER ON')
+    else:
+        GPIO.output(BUZZER, GPIO.LOW)
+        buzzerLabel.config(text='BUZZER OFF')
+
+
+def lightClicked():
+    global LightCount
+    LightCount = LightCount + 1
+    CounterReminder = LightCount % 2
+    if CounterReminder == 1:
+        GPIO.output(LED, GPIO.HIGH)
+        lightLabel.config(text='LIGHT ON')
+    else:
+        GPIO.output(LED, GPIO.LOW)
+        lightLabel.config(text='LIGHT OFF')
+
+
+def motorClicked():
+    global MotorCount
+    MotorCount = MotorCount + 1
+    CounterReminder = MotorCount % 2
+    if CounterReminder == 1:
+        servo.ChangeDutyCycle(NINETY_DEGREE)
+        motorLabel.config(text='MOTOR ON')
+    else:
+        servo.ChangeDutyCycle(ZERO_DEGREE)
+        motorLabel.config(text='MOTOR OFF')
+
+
+buzzerButton = Button(root, text="BUZZER", command=lambda:buzzerClicked(),
+                      padx=10, pady=0, fg="black", bg="red")
+motorButton = Button(root, text="MOTOR", command=lambda:motorClicked(),
+                     padx=10, pady=0, fg="white", bg="gray")
+lightButton = Button(root, text="LIGHT", command=lambda:lightClicked(),
+                     padx=10, pady=0, fg="black", bg="yellow")
+
+buzzerLabel = Label(root, text="BUZZER OFF", fg="black", bg="red")
+motorLabel = Label(root, text="MOTOR OFF", fg="white", bg="gray")
+lightLabel = Label(root, text="LIGHT OFF", fg="black", bg="yellow")
+
+root.columnconfigure(0, weight=1)
+root.columnconfigure(1, weight=1)
+root.columnconfigure(2, weight=1)
+root.rowconfigure(3, weight=1)
+root.rowconfigure(7, weight=1)
+
+buzzerButton.grid(row=3, column=0)
+motorButton.grid(row=3, column=1)
+lightButton.grid(row=3, column=2)
+buzzerLabel.grid(row=7, column=0)
+motorLabel.grid(row=7, column=1)
+lightLabel.grid(row=7, column=2)
+
+try:
+    root.mainloop()
+finally:
+    servo.stop()
+    GPIO.output(BUZZER, GPIO.LOW)
+    GPIO.output(LED, GPIO.LOW)
+    GPIO.cleanup()
